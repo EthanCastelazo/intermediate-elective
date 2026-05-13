@@ -1,6 +1,30 @@
 ---
 title: "Intermediate Elective 2"
 author: Ethan Castelazo
+date: 05-13-2026
 format: pdf
+source: editor
 ---
+
+# Set up
+
+## Packages
+
+```{r}
+#| label: packages
+
+# general use
+library(tidyverse)
+library(here)
+```
+
+
+## Data
+
+```{r}
+#| label: reading-data
+
+water_quality <- read_csv(here("data", "NCOS_YSI_Water_Quality_Monitoring_0.csv"))
+
+```
 
