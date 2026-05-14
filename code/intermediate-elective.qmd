@@ -29,7 +29,7 @@ suppressPackageStartupMessages({
 pacman::p_load(
   tidyverse, ggtext, showtext, 
   janitor, scales, glue,
-  camcorder, here  
+  camcorder, here,
   )
 })
 
@@ -56,15 +56,51 @@ source(here::here("utils/base_theme.R"))
 
 ```
 
+
 # 2. Data
 
 ```{r}
 #| label: reading-data
 
-water_quality <- read_csv(here("data", "NCOS_YSI_Water_Quality_Monitoring_0.csv"))
-NOAA_weather <- read_csv(here("data", "NOAA-weather-data.csv"))
+veg <- read_csv(here("data", "veg.csv"))
+
+metadata <- read_csv(here("data", "vp_veg_metadata.csv"))
+
 
 ```
+
+
+## Necessary Code from Class
+
+```{r}
+# created new object
+pools_explicit0 <- veg %>% 
+  # filtered to only include vernal pool transects
+  filter(str_detect(transect_name, "VP") &
+                    site == "ncos") %>% 
+  # added new rows to data frame
+  # for missing species and transect distances in each year and pool
+  complete(year, transect_name, psoc, transect_distance,
+           #f filled missing percent cover values with 0
+           fill = list(percent_cover = 0)) %>% 
+  #grouped by year, transect_name, and psoc
+  group_by(year, transect_name, psoc) %>% 
+  # calculating total percent cover across all quadrats
+  summarize(sum_pc = sum(percent_cover, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  # created a new column to join with metadata
+  unite("year_pool", year, transect_name, na.rm = TRUE) %>% 
+  # joined metadata data frame
+  left_join(metadata, by = "year_pool") %>% 
+  # calculated mean percent cover
+  mutate(mean_pc = sum_pc/num_quad)
+
+
+filtered_explicit0 <- pools_explicit0 %>%
+  filter(psoc == "Eryngium_vaseyi" | psoc == "algae")
+
+```
+
 
 
 # 3. Examine the Data
@@ -72,7 +108,7 @@ NOAA_weather <- read_csv(here("data", "NOAA-weather-data.csv"))
 ```{r}
 #| label: inspecting-water-quality
 
-glimpse(water_quality)
+glimpse(aq_ins)
 
 ```
 
