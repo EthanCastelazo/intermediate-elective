@@ -62,6 +62,7 @@ source(here::here("utils/base_theme.R"))
 #| label: reading-data
 
 water_quality <- read_csv(here("data", "NCOS_YSI_Water_Quality_Monitoring_0.csv"))
+NOAA_weather <- read_csv(here("data", "NOAA-weather-data.csv"))
 
 ```
 
@@ -82,43 +83,249 @@ glimpse(water_quality)
 #| warning: false
 
 ### |- filter China, 2000–2023, pivot long ----
-water_quality_clean <- water_quality |>
-  filter(country == "China", year >= 2000, year <= 2023) |>
-  select(
-    year,
-    coal      = coal_share_elec,
-    renewable = renewables_share_elec
+water_elevation <- water_quality |>
+  select( date = `Monitoring Date`,
+          time = `Time of WQ Measurement`,
+          water_elevation = `Water Surface Elevation`
   ) |>
-  filter(!is.na(coal), !is.na(renewable)) |>
-  pivot_longer(
-    cols      = c(coal, renewable),
-    names_to  = "source",
-    values_to = "share"
-  ) |>
-  mutate(
-    source = factor(source, levels = c("renewable", "coal"))
-  )
-
-### |- confirm 2023 endpoint values ----
-val_coal_2023  <- china |>
-  filter(year == 2023, source == "coal") |>
-  pull(share) |>
-  round(1)
-
-val_renew_2023 <- china |>
-  filter(year == 2023, source == "renewable") |>
-  pull(share) |>
-  round(1)
-
-### |- find coal peak year ----
-coal_peak <- china |>
-  filter(source == "coal") |>
-  slice_max(share, n = 1)
-
-coal_peak_year <- coal_peak$year
-coal_peak_val  <- round(coal_peak$share, 1)
+  filter(!is.na(water_elevation)) |>
+  mutate(date = mdy_hms(date) |> as_date())
 ```
 
 
+# 5. Visualization Parameters
+
+```{r}
+#| label: params
+#| include: true
+#| warning: false
+
+### |- plot aesthetics ----
+colors <- get_theme_colors(palette = list(
+  bg_color     = "#0D1B2A",
+  solar_gold   = "#F4A932", 
+  coal_blue    = "#6A80A0",   
+  text_white   = "#FFFFFF",
+  text_muted   = "#8A98A8",
+  text_sub     = "#B0B8C4",
+  grid_color    = "#1A2E42",
+  accent_coral = "#E8503A"   
+))
+
+bg_color     <- colors$palette$bg_color
+solar_gold   <- colors$palette$solar_gold
+coal_blue    <- colors$palette$coal_blue
+text_white   <- colors$palette$text_white
+text_muted   <- colors$palette$text_muted
+text_sub     <- colors$palette$text_sub
+grid_color   <- colors$palette$grid_color
+accent_coral <- colors$palette$accent_coral
+col_renew <- solar_gold
+col_coal  <- coal_blue
+
+
+### |- titles and caption ----
+title_text <- glue(
+  "<span style='font-weight:900; color:{coal_blue};'>Coal falls.&nbsp;</span>",
+  "<span style='font-weight:900; color:{solar_gold};'> Renewables rise.</span>"
+)
+
+subtitle_text <- glue(
+  "<span style='font-size:12pt; font-weight:400; color:{text_sub};'>",
+  "China's energy pivot is rewriting the power equation<br>",
+  "Share of electricity generation · 2000–2023",
+  "</span>"
+)
+
+caption_text  <- create_dcc_caption(
+  dcc_year    = 2026,
+  dcc_day     = 24,
+  source_text = "Our World in Data · OWID Energy Dataset (BP / Ember)"
+)
+
+### |- fonts ----
+setup_fonts()
+fonts <- get_font_families()
+```
+
+
+
+# 6. Plot
+
+```{r}
+#| label: plot
+#| warning: false
+
+### |- main plot ----
+p <- water_elevation |>
+  ggplot(aes(x = date, y = water_elevation)) +
+
+  # Geom
+  geom_hline(
+    yintercept = seq(0, 80, by = 20),
+    color = grid_color,
+    linewidth = 0.25
+  ) +
+  geom_line(
+    data = water_elevation,
+    linewidth = 1.9,
+    alpha = 1.0
+  ) +
+
+  geom_point(
+    data = china |> filter(year == 2000),
+    size = 3.5,
+    shape = 21,
+    fill = bg_color,
+    stroke = 1.8
+  ) +
+  geom_point(
+    data = china |> filter(year == 2023),
+    size = 3.5,
+    shape = 21,
+    fill = bg_color,
+    stroke = 1.8
+  ) +
+
+  # Annotate
+  annotate(
+    "segment",
+    x = coal_peak_year, xend = coal_peak_year,
+    y = 0, yend = coal_peak_val - 3,
+    color = accent_coral,
+    linewidth = 0.5,
+    linetype = "dotted"
+  ) +
+  annotate(
+    "text",
+    x = coal_peak_year - 0.3,
+    y = coal_peak_val - 5,
+    label = glue("Coal peak\n{coal_peak_year}: {coal_peak_val}%"),
+    hjust = 1,
+    size = 2.9,
+    color = accent_coral,
+    family = fonts$text,
+    lineheight = 1.1
+  ) +
+  annotate(
+    "segment",
+    x = 2015, xend = 2015,
+    y = 0, yend = 30,
+    color = "#D8E4EE",
+    linewidth = 0.45,
+    linetype = "dotted"
+  ) +
+  annotate(
+    "text",
+    x = 2015.4,
+    y = 32,
+    label = "2015: National\nsolar targets set",
+    hjust = 0,
+    size = 2.9,
+    color = "#D8E4EE",
+    family = fonts$text,
+    lineheight = 1.1
+  ) +
+  annotate(
+    "text",
+    x = 2019.8,
+    y = 44,
+    label = "2023: China installs more solar\nthan the US has ever built",
+    hjust = 0,
+    vjust = 0,
+    size = 3.0,
+    color = solar_gold,
+    family = fonts$text,
+    lineheight = 1.2,
+    fontface = "bold"
+  ) +
+  annotate(
+    "text",
+    x = 2023.6,
+    y = c(val_renew_2023, val_coal_2023),
+    label = c(
+      glue("Renewables\n{val_renew_2023}%"),
+      glue("Coal\n{val_coal_2023}%")
+    ),
+    hjust = 0,
+    vjust = 0.5,
+    size = 3.2,
+    color = c(col_renew, col_coal),
+    family = fonts$text,
+    lineheight = 1.15
+  ) +
+
+  # Scales
+  scale_color_manual(
+    values = c("renewable" = col_renew, "coal" = col_coal)
+  ) +
+  scale_x_continuous(
+    breaks = c(2000, 2005, 2010, 2015, 2020, 2023),
+    expand = expansion(mult = c(0.03, 0.24))
+  ) +
+  scale_y_continuous(
+    limits = c(0, 90),
+    breaks = seq(0, 80, by = 20),
+    labels = \(x) glue("{x}%"),
+    expand = expansion(mult = c(0.01, 0.04))
+  ) +
+
+  # Labs
+  labs(
+    title = title_text,
+    subtitle = subtitle_text,
+    caption = caption_text,
+    x = NULL,
+    y = NULL
+  ) +
+
+  # Theme
+  theme_void() +
+  theme(
+    # canvas
+    plot.background = element_rect(fill = bg_color, color = NA),
+    panel.background = element_rect(fill = bg_color, color = NA),
+    plot.title = element_markdown(
+      family = fonts$title,
+      size = 28,
+      color = text_white,
+      hjust = 0,
+      lineheight = 1.1,
+      margin = margin(t = 10, b = 6)
+    ),
+    plot.subtitle = element_markdown(
+      family = fonts$text,
+      size = 10,
+      color = text_sub,
+      hjust = 0,
+      lineheight = 1.4,
+      margin = margin(b = 22)
+    ),
+    plot.caption = element_markdown(
+      family = fonts$text,
+      size = 6.5,
+      color = "#5A6878",
+      hjust = 1,
+      margin = margin(t = 14)
+    ),
+    axis.text.x = element_text(
+      family = fonts$text,
+      size   = 9,
+      color  = text_muted,
+      margin = margin(t = 6)
+    ),
+    axis.text.y = element_text(
+      family = fonts$text,
+      size = 8,
+      color = text_muted,
+      hjust = 1
+    ),
+    axis.line = element_blank(),
+    axis.ticks = element_blank(),
+    panel.grid = element_blank(),
+    legend.position = "none",
+    plot.margin = margin(t = 20, r = 16, b = 16, l = 20)
+  )
+```
 
 
