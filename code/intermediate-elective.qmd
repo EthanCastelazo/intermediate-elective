@@ -2,24 +2,61 @@
 title: "Intermediate Elective 2"
 author: Ethan Castelazo
 date: 05-13-2026
-format: pdf
+format: 
+  pdf:
+    include-in-header: 
+       text: |
+         \usepackage{fvextra}
+         \DefineVerbatimEnvironment{Highlighting}{Verbatim}{breaklines,commandchars=\\\{\}}
+         \DefineVerbatimEnvironment{OutputCode}{Verbatim}{breaklines,commandchars=\\\{\}}
 source: editor
 ---
 
-# Set up
 
-## Packages
+
+# 1. Packages
 
 ```{r}
 #| label: packages
+#| warning: false
+#| message: false      
+#| results: "hide"     
 
-# general use
-library(tidyverse)
-library(here)
+## 1. LOAD PACKAGES & SETUP ----
+install.packages("magick", type = "binary")
+
+suppressPackageStartupMessages({
+pacman::p_load(
+  tidyverse, ggtext, showtext, 
+  janitor, scales, glue,
+  camcorder, here  
+  )
+})
+
+### |- figure size ----
+camcorder::gg_record(
+  dir    = here::here("temp_plots"),
+  device = "png",
+  width  = 6,
+  height = 10,
+  units  = "in",
+  dpi    = 320
+)
+
 ```
 
+```{r}
+#| label: util-functions
 
-## Data
+# Source utility functions
+suppressMessages(source(here::here("utils/fonts.R")))
+source(here::here("utils/social_icons.R"))
+source(here::here("utils/image_utils.R"))
+source(here::here("utils/base_theme.R"))
+
+```
+
+# 2. Data
 
 ```{r}
 #| label: reading-data
@@ -27,4 +64,61 @@ library(here)
 water_quality <- read_csv(here("data", "NCOS_YSI_Water_Quality_Monitoring_0.csv"))
 
 ```
+
+
+# 3. Examine the Data
+
+```{r}
+#| label: inspecting-water-quality
+
+glimpse(water_quality)
+
+```
+
+# 4. Tidy Data
+
+```{r}
+#| label: tidy
+#| warning: false
+
+### |- filter China, 2000–2023, pivot long ----
+water_quality_clean <- water_quality |>
+  filter(country == "China", year >= 2000, year <= 2023) |>
+  select(
+    year,
+    coal      = coal_share_elec,
+    renewable = renewables_share_elec
+  ) |>
+  filter(!is.na(coal), !is.na(renewable)) |>
+  pivot_longer(
+    cols      = c(coal, renewable),
+    names_to  = "source",
+    values_to = "share"
+  ) |>
+  mutate(
+    source = factor(source, levels = c("renewable", "coal"))
+  )
+
+### |- confirm 2023 endpoint values ----
+val_coal_2023  <- china |>
+  filter(year == 2023, source == "coal") |>
+  pull(share) |>
+  round(1)
+
+val_renew_2023 <- china |>
+  filter(year == 2023, source == "renewable") |>
+  pull(share) |>
+  round(1)
+
+### |- find coal peak year ----
+coal_peak <- china |>
+  filter(source == "coal") |>
+  slice_max(share, n = 1)
+
+coal_peak_year <- coal_peak$year
+coal_peak_val  <- round(coal_peak$share, 1)
+```
+
+
+
 
