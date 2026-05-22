@@ -40,3 +40,5 @@ pacman::p_load(
 
 The rendered document for intermediate elective 2 is [here](https://github.com/EthanCastelazo/intermediate-elective/blob/3565b0e568416a1a08fc67627e2c523c53e9b793/code/intermediate-elective.pdf)
 
+## Final Figure
+![Final figure](temp_plots/2026_05_22_10_27_21.146934.png)
