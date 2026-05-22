@@ -15,8 +15,12 @@ source: editor
 # Explaining my Inspiration
 I chose Steven Ponces' "Coal falls. Renewables rise" as my visualization template because I liked how simplistic and sleek his representaiton of energy data is. This style makes sense for the data I plan to present, because it charts 2 variables (coal vs. renewable energy) that use the same units over the same time in history. I plan to chart % coverage of algae and % coverage of coyote-thistle in the same fashion, to see how the the two variables follow or seperate from each other. From the veg dataset, I'll be using num_quad and percent_cover to calculate a mean_cover for both algae and coyote-thistle, which will be on my y-axis, and I'll use the date column for the x-axis to show change over time.
 
+# Sketching my figure
+A pdf of the sketch of my figure can be found [here](https://github.com/EthanCastelazo/intermediate-elective/blob/52a03d7fb325706e31cf2a9eb9626c2590488e9a/Figure_sketch.pdf)
 
-# 1. Packages
+# Coding up the Figure Using Ponce's Template
+
+## 1. Packages
 
 ```{r}
 #| label: packages
@@ -36,7 +40,7 @@ pacman::p_load(
 ```
 
 
-# 2. Data
+## 2. Data
 
 ```{r}
 #| label: reading-data
@@ -49,7 +53,7 @@ metadata <- read_csv(here("data", "vp_veg_metadata.csv"))
 ```
 
 
-## Necessary Code from Class
+### Necessary Code from Class
 
 ```{r}
 #| label: class-wrangling-code
@@ -87,7 +91,7 @@ filtered_explicit0 <- pools_explicit0 %>%
 ```
 
 
-# 3. Tidy Data
+## 3. Tidy Data
 
 ```{r}
 # retrieving the peak value of algae cover
@@ -104,7 +108,7 @@ algae_peak_val  <- round(algae_peak$mean_pc_year, 1)
 
 
 
-# 4. Visualization Parameters
+## 4. Visualization Parameters
 
 ```{r}
 #| label: params
@@ -166,7 +170,7 @@ fonts <- list(
 
 
 
-# 5. Plot
+## 5. Plot
 
 ```{r}
 #| label: plot
