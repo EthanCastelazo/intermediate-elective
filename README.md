@@ -27,7 +27,7 @@ pacman::p_load(
 │   ├── veg.csv     # vegetation data
 |   └── vp_veg_metadata.csv     # vernal pool metadata
 ├── temp_plots
-│   └── visualizations of final plots
+│   └── visualization of final plots as png
 ├── utils
 │   ├── base_theme.R
 │   ├── fonts.R
