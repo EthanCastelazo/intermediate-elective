@@ -12,13 +12,13 @@ format:
 source: editor
 ---
 
-# Explaining my Inspiration
+# 1. Explaining my Inspiration
 I chose Steven Ponces' "Coal falls. Renewables rise" as my visualization template because I liked how simplistic and sleek his representaiton of energy data is. This style makes sense for the data I plan to present, because it charts 2 variables (coal vs. renewable energy) that use the same units over the same time in history. I plan to chart % coverage of algae and % coverage of coyote-thistle in the same fashion, to see how the the two variables follow or seperate from each other. From the veg dataset, I'll be using num_quad and percent_cover to calculate a mean_cover for both algae and coyote-thistle, which will be on my y-axis, and I'll use the date column for the x-axis to show change over time.
 
-# Sketching my figure
+# 2. Sketching my figure
 A pdf of the sketch of my figure can be found [here](https://github.com/EthanCastelazo/intermediate-elective/blob/52a03d7fb325706e31cf2a9eb9626c2590488e9a/Figure_sketch.pdf)
 
-# Coding up the Figure Using Ponce's Template
+# 3. Coding up the Figure Using Ponce's Template
 
 ## 1. Packages
 
@@ -33,7 +33,7 @@ suppressPackageStartupMessages({
 pacman::p_load(
   tidyverse, ggtext, showtext, 
   janitor, scales, glue,
-  camcorder, here, magick  # <-- just add magick here
+  camcorder, here, magick
   )
 })
 
@@ -127,6 +127,7 @@ colors <- list(palette = list(
   accent_coral = "#E8503A"
 ))
 
+# assigning colors to objects
 bg_color     <- colors$palette$bg_color
 coyote_gold  <- colors$palette$coyote_gold
 algae_green  <- colors$palette$algae_green
@@ -140,11 +141,13 @@ col_algae  <- algae_green
 
 
 ### |- titles and caption ----
+# writing a snappy title
 title_text <- glue(
   "<span style='font-weight:900; color:{algae_green};'>Algae Falls.&nbsp;</span>",
   "<span style='font-weight:900; color:{coyote_gold};'> Coyote-thistle persists.</span>"
 )
 
+# writing subtitle
 subtitle_text <- glue(
   "<span style='font-size:12pt; font-weight:400; color:{text_sub};'>",
   "Despite mirroring the trajectory of coyote-thistle's percent cover<br>",
@@ -152,16 +155,17 @@ subtitle_text <- glue(
   "</span>"
 )
 
+# defining caption text with data source
 caption_text <- "Source: Cheadle Center for Biodiversity and Ecological Restoration"
 
 ### |- fonts ----
-# Load fonts directly — no dependency on his utils/fonts.R
+# Loading fonts directly with no dependency on  utils/fonts.R
 font_add_google("Oswald", "title_font")
 font_add_google("Roboto", "text_font")
 showtext_auto()
 showtext_opts(dpi = 320)
 
-# Create a simple fonts list to match his structure
+# Creating a simple fonts list 
 fonts <- list(
   title = "title_font",
   text  = "text_font"
@@ -184,21 +188,25 @@ p <- filtered_explicit0 |>
   ggplot(aes(x = year, y = mean_pc_year, color = psoc, group = psoc)) +
   
   # Geom
+  # Plotting horizontal lines
   geom_hline(
     yintercept = seq(0, 10, by = 2),
     color = grid_color,
     linewidth = 0.25
   ) +
+  # plotting coyote-thistle line
   geom_line(
     data = filtered_explicit0 |> filter(psoc == "Eryngium_vaseyi"),
     linewidth = 1.9,
     alpha = 1.0
   ) +
+  # plotting algae line
   geom_line(
     data = filtered_explicit0 |> filter(psoc == "algae"),
     linewidth = 1.3,
     alpha = 0.60
   ) +
+  # plotting start point
   geom_point(
     data = filtered_explicit0 |> filter(year == 2021),
     size = 3.5,
@@ -206,6 +214,7 @@ p <- filtered_explicit0 |>
     fill = bg_color,
     stroke = 1.8
   ) +
+  # plotting end point
   geom_point(
     data = filtered_explicit0 |> filter(year == 2025),
     size = 3.5,
@@ -214,15 +223,18 @@ p <- filtered_explicit0 |>
     stroke = 1.8
   ) +
 
-    # Scales
+  # Scales
+  # assinging gold to coyote-thistle, green to algae
   scale_color_manual(
     values = c("Eryngium_vaseyi" = coyote_gold, "algae" = col_algae)
   ) +
+  # customizing x axis limits
   scale_x_continuous(
     limits = c(2021,2025),
     breaks = c(2021, 2022, 2023, 2024, 2025),
     expand = expansion(mult = c(0.03, 0.24))
   ) +
+  # customizing y axis limits
   scale_y_continuous(
     limits = c(0, 10),
     breaks = seq(0, 10, by = 2),
@@ -230,7 +242,8 @@ p <- filtered_explicit0 |>
     expand = expansion(mult = c(0.01, 0.04))
   ) +
   
-# Annotate
+  # Annotate
+  # Adding dotted line at peak algae value
   annotate(
     "segment",
     x = algae_peak_year, xend = algae_peak_year,
@@ -239,6 +252,7 @@ p <- filtered_explicit0 |>
     linewidth = 0.5,
     linetype = "dotted"
   ) +
+  # adding dotted line between endpoints
   annotate(
     "segment",
     x = 2025, xend = 2025,
@@ -247,6 +261,7 @@ p <- filtered_explicit0 |>
     linewidth = 0.45,
     linetype = "dotted"
   ) +
+  # adding floating caption
   annotate(
     "text",
     x = 2025,
@@ -258,6 +273,7 @@ p <- filtered_explicit0 |>
     family = fonts$text,
     lineheight = 1.1
   ) +
+  # adding floating caption for algae
   annotate(
     "text",
     x = 2021.3,
@@ -270,6 +286,7 @@ p <- filtered_explicit0 |>
     family = fonts$text,
     lineheight = 1.15
   ) +
+  # adding floating caption for coyote-thistle
   annotate(
     "text",
     x = 2021.3,
@@ -282,6 +299,7 @@ p <- filtered_explicit0 |>
     family = fonts$text,
     lineheight = 1.15
   ) +
+  # adding floating caption
   annotate(
     "text",
     x = 2022.7,
@@ -307,6 +325,7 @@ p <- filtered_explicit0 |>
   ) +
 
   # Theme
+  # using same theme and background aesthetics from the creator
   theme_void() +
   theme(
     # canvas
@@ -359,6 +378,6 @@ p
 
 
 
-# Describing the Process
+# 4. Describing the Process
 I chose to just copy and paste the code from the creators project website on github. Luckily the creator labeled every step of their process with clear and concise headers, making it fairly simple to follow along and grab the code chunks I needed. That said,the process of using someone else's code for my own visualization purposes was fairly difficult. Of course it was nice that there was a framework provided for me, and a clear example of what my final visualization would look like, but it was pretty troublesome to adjust the code to my own data. It took a much more than just swapping out data sets and labels - a lot of the user's code involved files that were integrated into their github website, so I had to find some workarounds, and truthfully AI was integral in troubleshooting errors.This visualization takes on a very different aesthetic theme compared to what we usually make for assignments. Firstly, the title is more visually striking, and it includes an informative subtitle which we've never included in class. Additionally, there are no axes titles, which is usually a must-have for our assignments, but the author of this visualization seems to believe that the subtitle and visuals are self explanatory enough, so I'm following the same philosophy for the sake of replication. The dark background is a fresh way to make the bright lines pop on on the chart, and the dashed lines are a cool new way to indicate important times in the data. Lastly, the ability to add captions on the plot was a cool new way to communicate the data.
 
