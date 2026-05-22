@@ -357,3 +357,8 @@ p <- filtered_explicit0 |>
 p
 ```
 
+
+
+# Describing the Process
+I chose to just copy and paste the code from the creators project website on github. Luckily the creator labeled every step of their process with clear and concise headers, making it fairly simple to follow along and grab the code chunks I needed. That said,the process of using someone else's code for my own visualization purposes was fairly difficult. Of course it was nice that there was a framework provided for me, and a clear example of what my final visualization would look like, but it was pretty troublesome to adjust the code to my own data. It took a much more than just swapping out data sets and labels - a lot of the user's code involved files that were integrated into their github website, so I had to find some workarounds, and truthfully AI was integral in troubleshooting errors.This visualization takes on a very different aesthetic theme compared to what we usually make for assignments. Firstly, the title is more visually striking, and it includes an informative subtitle which we've never included in class. Additionally, there are no axes titles, which is usually a must-have for our assignments, but the author of this visualization seems to believe that the subtitle and visuals are self explanatory enough, so I'm following the same philosophy for the sake of replication. The dark background is a fresh way to make the bright lines pop on on the chart, and the dashed lines are a cool new way to indicate important times in the data. Lastly, the ability to add captions on the plot was a cool new way to communicate the data.
+
