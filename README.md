@@ -3,11 +3,16 @@
 ## General Information
 This repository contains data and code to explore patterns in aquatic invertebrate abundance at North Campus Open Space.
 
-To work with the code in this repository, you will need the following packages:
+To work with the code in this repository, you will need the following code chunk:
 
 ```
-library(tidyverse)
-library(here)
+suppressPackageStartupMessages({
+pacman::p_load(
+  tidyverse, ggtext, showtext, 
+  janitor, scales, glue,
+  camcorder, here, magick
+  )
+})
 ```
 
 ## Data and file information
@@ -19,7 +24,15 @@ library(here)
 │   ├── intermediate-elective.pdf
 │   └── intermediate-elective.qmd
 ├── data
-│   ├── NCOS_YSI_Water_Quality_Monitoring_0.csv     # water quality data
+│   ├── veg.csv     # vegetation data
+|   └── vp_veg_metadata.csv     # vernal pool metadata
+├── temp_plots
+│   └── visualizations of final plots
+├── utils
+│   ├── base_theme.R
+│   ├── fonts.R
+│   ├── image_utils.R
+│   ├── social_icons.R
 └── intermediate-elective.Rproj
 ```
 
